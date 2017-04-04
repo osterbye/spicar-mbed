@@ -13,29 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef SPICAR_GNSS_H_
+#define SPICAR_GNSS_H_
 #include "mbed.h"
-#include "ublox/spicar_gnss.h"
+#include "C027_Support/GPS.h"
 
-DigitalOut led1(LED1);
-Serial pc(USBTX, USBRX);
-Timer waitTimer;
+class SpiCar_GNSS
+{
+public:
+    SpiCar_GNSS(Serial *pc);
+    ~SpiCar_GNSS();
 
-int main() {
-    const int loopTime = 1000;
-    bool abort = false;
-    SpiCar_GNSS gnss(&pc);
-    Thread gnss_thread;
+    void stop_thread();
+    void loop();
 
-    gnss_thread.start(&gnss, &SpiCar_GNSS::loop);
+private:
+#if 1   // use GPSI2C class
+    GPSI2C gnss;
+#else   // or GPSSerial class
+    GPSSerial gnss;
+#endif
 
-    waitTimer.start();
-    while(!abort) {
-        led1 = !led1;
-        time_t seconds = time(NULL);
-        pc.printf("Time: %s\r\n", ctime(&seconds));
+    bool abort;
+    Serial *pc;
+    Timer wait_timer;
+    int refresh_time;
+    bool do_set_time;
+};
 
-        Thread::wait((loopTime - waitTimer.read_ms()));
-        waitTimer.reset();
-    }    
-}
-
+#endif // SPICAR_GNSS_H_
