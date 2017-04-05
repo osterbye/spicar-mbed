@@ -62,25 +62,15 @@ void SpiCar_GNSS::loop() {
                             int tod = 0;
                             int date = 0;
                             if (gnss.getNmeaItem(1,buf,len,tod, 10)) {// Time of Day
-                                int hour = tod/10000;
-                                int minute = (tod/100) - (hour*100);
-                                int second = tod - (hour*10000) - (minute*100);
-                                //pc->printf("%lu:%lu:%lu\r\n", hour, minute, second);
+                                struct tm t = {0};
+                                t.tm_hour = tod/10000;
+                                t.tm_min = (tod/100) - (t.tm_hour*100);
+                                t.tm_sec = tod - (t.tm_hour*10000) - (t.tm_min*100);
                                 if (gnss.getNmeaItem(9,buf,len,date, 10)) {
-                                    int day = date/10000;
-                                    int month = (date/100) - (day*100);
-                                    int year = date - (day*10000) - (month*100);
-                                    pc->printf("%lu - %lu/%lu %lu\r\n", date, day, month, year);
-                                    //pc->printf("NMEA: %.*s\r\n", len-2, buf);
-                                    struct tm gnssTime = {0};
-                                    gnssTime.tm_hour = hour;
-                                    gnssTime.tm_min = minute;
-                                    gnssTime.tm_sec = second;
-                                    gnssTime.tm_year = year;
-                                    gnssTime.tm_mon = month;
-                                    gnssTime.tm_mday = day;
-                                    double seconds = mktime(&gnssTime);
-                                    set_time(seconds);
+                                    t.tm_mday = date/10000;
+                                    t.tm_mon = (date/100) - (t.tm_mday*100) - 1;
+                                    t.tm_year = (date - (t.tm_mday*10000) - ((t.tm_mon+1)*100)) + 100;
+                                    set_time(mktime(&t));
                                     do_set_time = false;
                                 }
                             }
