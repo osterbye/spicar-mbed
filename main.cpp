@@ -15,6 +15,9 @@
  */
 #include "mbed.h"
 #include "ublox/spicar_gnss.h"
+#include "ublox/spicar_mdm.h"
+
+#include "benchmarks/benchmark_thread.h"
 
 DigitalOut led1(LED1);
 Serial pc(USBTX, USBRX);
@@ -24,9 +27,15 @@ int main() {
     const int loopTime = 1000;
     bool abort = false;
     SpiCar_GNSS gnss(&pc);
-    Thread gnss_thread;
+    Thread gnss_thread(osPriorityBelowNormal, DEFAULT_STACK_SIZE*0.75);
+    SpiCar_MDM mdm(&pc);
+    Thread mdm_thread(osPriorityBelowNormal, DEFAULT_STACK_SIZE*1.25);
 
     gnss_thread.start(&gnss, &SpiCar_GNSS::loop);
+
+    if (mdm.initialize()) {
+        mdm_thread.start(&mdm, &SpiCar_MDM::loop);
+    }
 
     waitTimer.start();
     while(!abort) {
@@ -34,8 +43,12 @@ int main() {
         time_t seconds = time(NULL);
         pc.printf("Time: %s\r\n", ctime(&seconds));
 
+        // Benchmarks
+        //print_thread_data(&Thread, &pc);
+        print_thread_data(&gnss_thread, &pc);
+        print_thread_data(&mdm_thread, &pc);
+
         Thread::wait((loopTime - waitTimer.read_ms()));
         waitTimer.reset();
     }    
 }
-
