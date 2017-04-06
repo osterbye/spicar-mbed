@@ -15,6 +15,8 @@
  */
 #include "spicar_gnss.h"
 
+#define NMEA183_MAX_MSG_LENGTH    82
+
 SpiCar_GNSS::SpiCar_GNSS(Serial *pc) : abort(false), pc(pc), refresh_time(1000), do_set_time(true) {
 }
 
@@ -27,7 +29,7 @@ void SpiCar_GNSS::stop_thread() {
 
 void SpiCar_GNSS::loop() {
     int ret;
-    char buf[512] = "";
+    char buf[NMEA183_MAX_MSG_LENGTH] = "";
     //char link[128] = "";
 
     wait_timer.start();
