@@ -28,11 +28,11 @@ int main() {
     const int loopTime = 1000;
     bool abort = false;
     SpiCar_GNSS gnss(&pc);
-    Thread gnss_thread(osPriorityBelowNormal, DEFAULT_STACK_SIZE*0.75);
+    Thread gnss_thread(osPriorityBelowNormal, 52*8);
     SpiCar_MDM mdm(&pc);
-    Thread mdm_thread(osPriorityBelowNormal, DEFAULT_STACK_SIZE*1.25);
+    Thread mdm_thread(osPriorityBelowNormal, 265*8);
     SpiCar_IMU imu(SDA, SCL, LSM9DS1_PRIMARY_XG_ADDR, LSM9DS1_PRIMARY_M_ADDR, &pc);
-    Thread imu_thread(osPriorityBelowNormal, 768);
+    Thread imu_thread(osPriorityBelowNormal, 96*8);
 
     gnss_thread.start(&gnss, &SpiCar_GNSS::loop);
 
