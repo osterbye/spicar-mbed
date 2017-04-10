@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 #include "mbed.h"
-#include "ublox/spicar_gnss.h"
-#include "ublox/spicar_mdm.h"
-#include "imu/spicar_imu.h"
+#include "spicar_gnss.h"
+#include "spicar_mdm.h"
+#include "spicar_imu.h"
 
 #include "benchmarks/benchmark_thread.h"
 
