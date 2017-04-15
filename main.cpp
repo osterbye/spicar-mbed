@@ -17,12 +17,15 @@
 #include "spicar_gnss.h"
 #include "spicar_mdm.h"
 #include "spicar_imu.h"
+#include "dispatcher.h"
 
 #include "benchmarks/benchmark_thread.h"
 
 DigitalOut led1(LED1);
 Serial pc(USBTX, USBRX);
 Timer waitTimer;
+
+Thread dispatcherThread;
 
 int main() {
     const int loopTime = 1000;
@@ -43,6 +46,8 @@ int main() {
     if (imu.initialize()) {
         imu_thread.start(&imu, &SpiCar_IMU::loop);
     }
+
+    dispatcherThread.start(dispatcher_task);
 
     waitTimer.start();
     while(!abort) {
