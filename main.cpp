@@ -18,6 +18,7 @@
 #include "spicar_mdm.h"
 #include "spicar_imu.h"
 #include "dispatcher.h"
+#include "console.h"
 
 #include "benchmarks/benchmark_thread.h"
 
@@ -47,6 +48,7 @@ int main() {
         imu_thread.start(&imu, &SpiCar_IMU::loop);
     }
 
+    console_init(&pc);
     dispatcherThread.start(dispatcher_task);
 
     waitTimer.start();
@@ -63,5 +65,6 @@ int main() {
 
         Thread::wait((loopTime - waitTimer.read_ms()));
         waitTimer.reset();
+        console_task();
     }    
 }
