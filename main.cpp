@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 #include "mbed.h"
-#include "ublox/spicar_gnss.h"
-#include "ublox/spicar_mdm.h"
-#include "imu/spicar_imu.h"
+#include "spicar_gnss.h"
+#include "spicar_mdm.h"
+#include "spicar_imu.h"
+#include "dispatcher.h"
+#include "console.h"
 
 #include "benchmarks/benchmark_thread.h"
 
 DigitalOut led1(LED1);
 Serial pc(USBTX, USBRX);
 Timer waitTimer;
+
+Thread dispatcherThread;
 
 int main() {
     const int loopTime = 1000;
@@ -44,6 +48,9 @@ int main() {
         imu_thread.start(&imu, &SpiCar_IMU::loop);
     }
 
+    console_init(&pc);
+    dispatcherThread.start(dispatcher_task);
+
     waitTimer.start();
     while(!abort) {
         led1 = !led1;
@@ -58,5 +65,6 @@ int main() {
 
         Thread::wait((loopTime - waitTimer.read_ms()));
         waitTimer.reset();
+        console_task();
     }    
 }
