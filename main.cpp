@@ -38,14 +38,14 @@ int main() {
     SpiCar_IMU imu(SDA, SCL, LSM9DS1_PRIMARY_XG_ADDR, LSM9DS1_PRIMARY_M_ADDR, &pc);
     Thread imu_thread(osPriorityBelowNormal, 96*8);
 
-    gnss_thread.start(&gnss, &SpiCar_GNSS::loop);
+    gnss_thread.start(callback(&gnss, &SpiCar_GNSS::loop));
 
     if (mdm.initialize()) {
-        mdm_thread.start(&mdm, &SpiCar_MDM::loop);
+        mdm_thread.start(callback(&mdm, &SpiCar_MDM::loop));
     }
 
     if (imu.initialize()) {
-        imu_thread.start(&imu, &SpiCar_IMU::loop);
+        imu_thread.start(callback(&imu, &SpiCar_IMU::loop));
     }
 
     console_init(&pc);
