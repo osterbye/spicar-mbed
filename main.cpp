@@ -29,7 +29,7 @@ Timer waitTimer;
 Thread dispatcherThread;
 
 int main() {
-    const int loopTime = 1000;
+    const int loopTime = 10000;
     bool abort = false;
     SpiCar_GNSS gnss(&pc);
     Thread gnss_thread(osPriorityBelowNormal, 112*8);
@@ -63,8 +63,11 @@ int main() {
         print_thread_data(&mdm_thread, &pc);
         print_thread_data(&imu_thread, &pc);
 
-        Thread::wait((loopTime - waitTimer.read_ms()));
+        // execute console task for remaining loopTime
+        while ((loopTime - waitTimer.read_ms()) > 0) {
+            console_task();
+            Thread::wait(5);
+        }
         waitTimer.reset();
-        console_task();
     }    
 }
