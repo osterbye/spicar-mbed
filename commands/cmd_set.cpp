@@ -22,7 +22,7 @@ static void cmd_set_gotPath(const struct token * tok) {
 
 static void cmd_set_gotValue(const struct token * tok) { 
     if (tok->type == TOKEN_INTEGER) {
-        dispatcher_execute(CMD_TYPE_SET, CMD_FROM_CONSOLE, tok->u.path);
+        //dispatcher_execute(CMD_TYPE_SET, CMD_FROM_CONSOLE, tok->u.path);
     } else {
         console_dev->puts("Command argument #2 is not a value\r\n");
     }

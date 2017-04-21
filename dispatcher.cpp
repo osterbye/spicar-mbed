@@ -2,10 +2,18 @@
 #include "mbed.h"
 #include "mbed_events.h"
 
-static Mail<Command, MAX_CONCURRENT_COMMANDS> cmdMailbox;
-static EventQueue routineScheduler(MAX_ROUTINES*EVENTS_EVENT_SIZE);
+Dispatcher::Dispatcher(Serial *pc) :
+    abort(false), pc(pc), routineScheduler(MAX_ROUTINES * EVENTS_EVENT_SIZE) {
+}
 
-void dispatcher_register(Routine * routine) {
+Dispatcher::~Dispatcher() {
+}
+
+void Dispatcher::stop_thread() {
+    abort = true;
+}
+
+void Dispatcher::addRoutine(Routine * routine) {
     int id;
     if (routine->init != NULL) {
         routine->init();
@@ -22,7 +30,7 @@ void dispatcher_register(Routine * routine) {
     }
 }
 
-void dispatcher_execute(enum commandType type, enum commandSource source, const char * treePath) {
+void Dispatcher::executeCommand(enum commandType type, enum commandSource source, const char * treePath) {
     Command *cmd = cmdMailbox.alloc();
     cmd->type = type;
     cmd->source = source;
@@ -32,8 +40,8 @@ void dispatcher_execute(enum commandType type, enum commandSource source, const 
     }
 }
 
-void dispatcher_task() {
-    while (1) {
+void Dispatcher::loop() {
+    while (!abort) {
         /* execute any commands pending in mailbox */
         osEvent evt = cmdMailbox.get(0);
         if (evt.status == osEventMail) {
@@ -42,18 +50,18 @@ void dispatcher_task() {
 
             /* TODO: remove following debug output: */
             const char * commandTypes[] = {
-                "CMD_TYPE_GET",
-                "CMD_TYPE_SET",
-                "CMD_TYPE_SAVE_CONFIG",
-                "CMD_TYPE_REVERT_CONFIG",
-                "CMD_TYPE_FOTA_START",
-                "CMD_TYPE_HELP",
+                "GET",
+                "SET",
+                "SAVE_CONFIG",
+                "REVERT_CONFIG",
+                "FOTA_START",
+                "HELP",
             };
             const char *  commandSources[] = {
-                "CMD_FROM_CLOUD",
-                "CMD_FROM_CONSOLE",
+                "CLOUD",
+                "CONSOLE",
             };    
-            printf("Executing %s, path %s, source %s\r\n", commandTypes[cmd->type], cmd->treePath, commandSources[cmd->source]);
+            pc->printf("\r\nExec %s on %s from %s\r\n", commandTypes[cmd->type], cmd->treePath, commandSources[cmd->source]);
 
             cmdMailbox.free(cmd);
         }

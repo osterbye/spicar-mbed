@@ -1,7 +1,6 @@
 #ifndef DISPATCHER_H_
 #define DISPATCHER_H_
-
-#include <stdint.h>
+#include <mbed.h>
 
 /**
  * Vehicle subsystems are numerous and too many for each to have its own
@@ -19,8 +18,8 @@
  * 
  */
 
-#define MAX_ROUTINES 100
-#define MAX_CONCURRENT_COMMANDS 16
+#define MAX_ROUTINES             100
+#define MAX_CONCURRENT_COMMANDS   16
 
 enum commandType {
     CMD_TYPE_GET,
@@ -63,8 +62,23 @@ typedef struct routine {
     uint32_t period_ms;
 } Routine;
 
-void dispatcher_register(Routine * routine);
-void dispatcher_execute(enum commandType type, enum commandSource source, const char * treePath);
-void dispatcher_task();
+
+class Dispatcher
+{
+public:
+    Dispatcher(Serial *pc);
+    ~Dispatcher();
+
+    void stop_thread();
+    void addRoutine(Routine * routine);
+    void executeCommand(enum commandType type, enum commandSource source, const char * treePath);
+    void loop();
+
+private:
+    bool abort;
+    Serial *pc;
+    Mail<Command, MAX_CONCURRENT_COMMANDS> cmdMailbox;
+    EventQueue routineScheduler;
+};
 
 #endif // DISPATCHER_H_

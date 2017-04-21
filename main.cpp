@@ -26,7 +26,6 @@ DigitalOut led1(LED1);
 Serial pc(USBTX, USBRX);
 Timer waitTimer;
 
-Thread dispatcherThread;
 
 int main() {
     const int loopTime = 10000;
@@ -37,7 +36,10 @@ int main() {
     Thread mdm_thread(osPriorityBelowNormal, 270*8);
     SpiCar_IMU imu(SDA, SCL, LSM9DS1_PRIMARY_XG_ADDR, LSM9DS1_PRIMARY_M_ADDR, &pc);
     Thread imu_thread(osPriorityBelowNormal, 96*8);
+    Dispatcher dispatcher(&pc);
+    Thread dispatcher_thread(osPriorityBelowNormal, 96*8);
 
+    dispatcher_thread.start(callback(&dispatcher, &Dispatcher::loop));
     gnss_thread.start(callback(&gnss, &SpiCar_GNSS::loop));
 
     if (mdm.initialize()) {
@@ -49,7 +51,6 @@ int main() {
     }
 
     console_init(&pc);
-    dispatcherThread.start(dispatcher_task);
 
     waitTimer.start();
     while(!abort) {

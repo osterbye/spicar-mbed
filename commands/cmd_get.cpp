@@ -13,7 +13,7 @@ static void cmd_get_exec() {
 
 static void cmd_get_gotPath(const struct token * tok) {
     if (tok->type == TOKEN_PATH) {
-        dispatcher_execute(CMD_TYPE_GET, CMD_FROM_CONSOLE, tok->u.path);
+        //dispatcher_execute(CMD_TYPE_GET, CMD_FROM_CONSOLE, tok->u.path);
     } else {
         console_dev->puts("Command argument is not path\r\n");
     }
